@@ -1,5 +1,8 @@
 /target/
 
+### Private Settings ###
+application-private.properties
+
 ### STS ###
 .apt_generated
 .classpath
