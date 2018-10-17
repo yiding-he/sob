@@ -1,2 +1,5 @@
 # sob
-Smack Operator Bot, a XMPP based bot using smack for system operators
+
+Smack Operator Bot, a Smack based XMPP bot for system operators.
+
+_Project is under development._
