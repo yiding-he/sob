@@ -1,6 +1,8 @@
 package com.hyd.sob.bots;
 
+import com.hyd.sob.Role;
 import com.hyd.sob.SobConfiguration;
+import com.hyd.sob.commands.Commands;
 import org.jivesoftware.smack.chat2.Chat;
 import org.jivesoftware.smack.packet.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,9 @@ public class AdminBot extends Bot {
     @Autowired
     private SobConfiguration configuration;
 
+    @Autowired
+    private Commands commands;
+
     @Override
     public boolean match(Message message) {
         String userId = message.getFrom().getLocalpartOrNull().asUnescapedString();
@@ -20,6 +25,6 @@ public class AdminBot extends Bot {
 
     @Override
     public void handleMessage(Message message, Chat chat) throws Exception {
-        chat.send("你好，管理员");
+        commands.execute(Role.Admin, message, chat);
     }
 }
