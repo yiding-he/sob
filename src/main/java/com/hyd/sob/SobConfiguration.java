@@ -3,6 +3,8 @@ package com.hyd.sob;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 @ConfigurationProperties(prefix = "sob")
 @Data
 public class SobConfiguration {
@@ -20,4 +22,6 @@ public class SobConfiguration {
     private String botUserPass;
 
     private String botResource = "sob-bot";
+
+    private List<String> users;
 }

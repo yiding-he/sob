@@ -9,6 +9,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jxmpp.jid.EntityBareJid;
+import org.jxmpp.jid.impl.JidCreate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class BotService {
@@ -29,6 +33,8 @@ public class BotService {
     private BotFactory botFactory;
 
     private XMPPConnection connection;
+
+    private ChatManager chatManager;
 
     @PostConstruct
     private void init() throws Exception {
@@ -64,7 +70,7 @@ public class BotService {
     }
 
     private void initChatManager() {
-        ChatManager chatManager = ChatManager.getInstanceFor(connection);
+        chatManager = ChatManager.getInstanceFor(connection);
         chatManager.addIncomingListener(this::onMessageReceived);
     }
 
@@ -76,6 +82,35 @@ public class BotService {
             }
         } catch (Exception e) {
             LOG.error(e.toString(), e);
+        }
+    }
+
+    public void sendMessage(Map<String, Object> message) {
+        String strMessage = "收到消息\n" + message.entrySet().stream()
+                .map(entry -> entry.getKey() + ": " + entry.getValue())
+                .collect(Collectors.joining("\n"));
+
+        configuration.getUsers()
+                .stream()
+                .map(this::toJid)
+                .filter(Objects::nonNull)
+                .forEach(jid -> sendChatMessage(jid, strMessage));
+    }
+
+    private void sendChatMessage(EntityBareJid jid, String strMessage)  {
+        try {
+            chatManager.chatWith(jid).send(strMessage);
+        } catch (Exception e) {
+            LOG.error("", e);
+        }
+    }
+
+    private EntityBareJid toJid(String user) {
+        try {
+            return JidCreate.entityBareFrom(user + "@" + configuration.getXmppServerHost());
+        } catch (Exception e) {
+            LOG.error("", e);
+            return null;
         }
     }
 

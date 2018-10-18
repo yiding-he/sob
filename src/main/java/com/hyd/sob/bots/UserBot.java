@@ -8,18 +8,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AdminBot extends Bot {
+public class UserBot extends Bot {
 
     @Autowired
     private Commands commands;
 
     @Override
     public boolean match(Message message) {
-        return isAdmin(message);
+        return !isAdmin(message);
     }
 
     @Override
     public void handleMessage(Message message, Chat chat) throws Exception {
-        commands.execute(Role.Admin, message, chat);
+        commands.execute(Role.User, message, chat);
     }
 }
