@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +22,13 @@ public class MessageController {
     @Autowired
     private BotService botService;
 
+    /**
+     * Send everything in request parameters with XMPP bot
+     *
+     * @param request request object
+     *
+     * @return operation result
+     */
     @PostMapping("/post")
     public Result postMessage(HttpServletRequest request) {
         try {
@@ -36,12 +42,12 @@ public class MessageController {
         }
     }
 
+    // Wrap request parameters to a Map object
     private Map<String, Object> parseMessage(HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
 
-        request.getParameterMap().forEach((key, value) -> {
-            result.put(key, Arrays.toString(value));
-        });
+        request.getParameterMap().forEach(
+                (key, value) -> result.put(key, String.join(",", value)));
 
         return result;
     }

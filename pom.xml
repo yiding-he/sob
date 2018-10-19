@@ -43,6 +43,11 @@
             <artifactId>spring-boot-configuration-processor</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.igniterealtime.smack/smack-extensions -->
         <dependency>
             <groupId>org.igniterealtime.smack</groupId>

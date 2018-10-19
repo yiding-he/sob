@@ -1,6 +1,8 @@
 package com.hyd.sob;
 
 import com.hyd.sob.bots.Bot;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.chat2.Chat;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -86,18 +89,41 @@ public class BotService {
     }
 
     public void sendMessage(Map<String, Object> message) {
-        String strMessage = "收到消息\n" + message.entrySet().stream()
-                .map(entry -> entry.getKey() + ": " + entry.getValue())
-                .collect(Collectors.joining("\n"));
+
+        String timestamp = FastDateFormat
+                .getDateTimeInstance(FastDateFormat.MEDIUM, FastDateFormat.MEDIUM)
+                .format(new Date());
+
+        String strMessage = timestamp + "\n" +
+                message.entrySet().stream()
+                        .map(this::entryToString)
+                        .collect(Collectors.joining("\n"));
 
         configuration.getUsers()
                 .stream()
                 .map(this::toJid)
                 .filter(Objects::nonNull)
-                .forEach(jid -> sendChatMessage(jid, strMessage));
+                .forEach(jid -> sendToJid(jid, strMessage));
     }
 
-    private void sendChatMessage(EntityBareJid jid, String strMessage)  {
+    private String entryToString(Map.Entry<String, Object> entry) {
+
+        if (entry.getValue() == null) {
+            return entry.getKey();
+
+        } else if (entry.getValue() instanceof CharSequence) {
+            if (StringUtils.isBlank((CharSequence) entry)) {
+                return entry.getKey();
+            } else {
+                return entry.getKey() + ": " + entry.getValue();
+            }
+
+        } else {
+            return entry.getKey() + ": " + entry.getValue();
+        }
+    }
+
+    private void sendToJid(EntityBareJid jid, String strMessage) {
         try {
             chatManager.chatWith(jid).send(strMessage);
         } catch (Exception e) {
