@@ -112,7 +112,7 @@ public class BotService {
             return entry.getKey();
 
         } else if (entry.getValue() instanceof CharSequence) {
-            if (StringUtils.isBlank((CharSequence) entry)) {
+            if (StringUtils.isBlank((CharSequence) entry.getValue())) {
                 return entry.getKey();
             } else {
                 return entry.getKey() + ": " + entry.getValue();
