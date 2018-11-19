@@ -40,26 +40,29 @@ public class BotService {
 
     private ChatManager chatManager;
 
+    private AbstractConnectionClosedListener connectionClosedListener = new AbstractConnectionClosedListener() {
+
+        @Override
+        public void connectionTerminated() {
+            try {
+                initConnection();
+            } catch (Exception e) {
+                LOG.error("Reconnect failed", e);
+            }
+        }
+    };
+
     @PostConstruct
     private void init() throws Exception {
         initConnection();
         LOG.info("SOB bot is ready.");
-        initChatManager();
     }
 
     private void initConnection() throws Exception {
         this.connection = botLogin();
-        this.connection.addConnectionListener(new AbstractConnectionClosedListener() {
-
-            @Override
-            public void connectionTerminated() {
-                try {
-                    initConnection();
-                } catch (Exception e) {
-                    LOG.error("Reconnect failed", e);
-                }
-            }
-        });
+        this.connection.addConnectionListener(this.connectionClosedListener);
+        this.chatManager = ChatManager.getInstanceFor(this.connection);
+        this.chatManager.addIncomingListener(this::onMessageReceived);
     }
 
     private XMPPTCPConnection botLogin() throws Exception {
@@ -83,11 +86,6 @@ public class BotService {
 
         tcpConnection.connect().login();
         return tcpConnection;
-    }
-
-    private void initChatManager() {
-        chatManager = ChatManager.getInstanceFor(connection);
-        chatManager.addIncomingListener(this::onMessageReceived);
     }
 
     private void onMessageReceived(EntityBareJid jid, Message message, Chat chat) {
