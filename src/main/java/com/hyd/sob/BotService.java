@@ -3,6 +3,7 @@ package com.hyd.sob;
 import com.hyd.sob.bots.Bot;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
+import org.jivesoftware.smack.AbstractConnectionClosedListener;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.chat2.Chat;
@@ -41,12 +42,24 @@ public class BotService {
 
     @PostConstruct
     private void init() throws Exception {
-
-        XMPPTCPConnection tcpConnection = botLogin();
+        initConnection();
         LOG.info("SOB bot is ready.");
-
-        this.connection = tcpConnection;
         initChatManager();
+    }
+
+    private void initConnection() throws Exception {
+        this.connection = botLogin();
+        this.connection.addConnectionListener(new AbstractConnectionClosedListener() {
+
+            @Override
+            public void connectionTerminated() {
+                try {
+                    initConnection();
+                } catch (Exception e) {
+                    LOG.error("Reconnect failed", e);
+                }
+            }
+        });
     }
 
     private XMPPTCPConnection botLogin() throws Exception {
