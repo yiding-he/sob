@@ -99,7 +99,7 @@ public class BotService {
         }
     }
 
-    public void sendMessage(Map<String, Object> message) {
+    public void sendMessage(Map<String, Object> message, String group) {
 
         String timestamp = FastDateFormat
                 .getDateTimeInstance(FastDateFormat.MEDIUM, FastDateFormat.MEDIUM)
@@ -111,7 +111,11 @@ public class BotService {
                         .collect(Collectors.joining("\n"));
 
         configuration.getUsers()
+                .entrySet()
                 .stream()
+                .filter(entry -> StringUtils.isBlank(group) || entry.getKey().equals(group))
+                .flatMap(entry -> entry.getValue().stream())
+                .distinct()
                 .map(this::toJid)
                 .filter(Objects::nonNull)
                 .forEach(jid -> sendToJid(jid, strMessage));

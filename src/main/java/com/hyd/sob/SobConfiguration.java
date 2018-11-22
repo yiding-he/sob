@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
+import java.util.Map;
 
 @ConfigurationProperties(prefix = "sob")
 @Data
@@ -23,5 +24,5 @@ public class SobConfiguration {
 
     private String botResource = "sob-bot";
 
-    private List<String> users;
+    private Map<String, List<String>> users;
 }

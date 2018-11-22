@@ -33,7 +33,8 @@ public class MessageController {
     public Result postMessage(HttpServletRequest request) {
         try {
             Map<String, Object> message = parseMessage(request);
-            botService.sendMessage(message);
+            String group = request.getParameter("group");
+            botService.sendMessage(message, group);
             return Result.success();
 
         } catch (Exception e) {
@@ -45,10 +46,11 @@ public class MessageController {
     // Wrap request parameters to a Map object
     private Map<String, Object> parseMessage(HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
-
-        request.getParameterMap().forEach(
-                (key, value) -> result.put(key, String.join(",", value)));
-
+        request.getParameterMap().forEach((key, value) -> {
+            if (!key.equals("group")) {
+                result.put(key, String.join(",", value));
+            }
+        });
         return result;
     }
 }
