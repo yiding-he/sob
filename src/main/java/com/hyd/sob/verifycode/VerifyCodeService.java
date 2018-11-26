@@ -28,7 +28,7 @@ public class VerifyCodeService {
                 .build();
     }
 
-    public String generateCode(String userId, String service) {
+    public String  generateCode(String userId, String service) {
 
         String code = randomCode();
         while (cache.getIfPresent(code + ":" + service) != null) {
@@ -36,7 +36,7 @@ public class VerifyCodeService {
         }
 
         cache.put(code + ":" + service, userId);
-        return code;
+        return code.substring(0, 4) + " " + code.substring(4);
     }
 
     private String randomCode() {
@@ -44,6 +44,7 @@ public class VerifyCodeService {
     }
 
     public String getUser(String code, String service) {
+        code = code.replaceAll("\\s", "");
         return cache.getIfPresent(code + ":" + service);
     }
 }

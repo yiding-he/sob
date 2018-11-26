@@ -2,10 +2,10 @@ package com.hyd.sob;
 
 import com.hyd.sob.bots.Bot;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.FastDateFormat;
-import org.jivesoftware.smack.AbstractConnectionClosedListener;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.ReconnectionManager;
 import org.jivesoftware.smack.chat2.Chat;
 import org.jivesoftware.smack.chat2.ChatManager;
 import org.jivesoftware.smack.packet.Message;
@@ -36,21 +36,11 @@ public class BotService {
     @Autowired
     private BotFactory botFactory;
 
-    private XMPPConnection connection;
+    private AbstractXMPPConnection connection;
 
     private ChatManager chatManager;
 
-    private AbstractConnectionClosedListener connectionClosedListener = new AbstractConnectionClosedListener() {
-
-        @Override
-        public void connectionTerminated() {
-            try {
-                initConnection();
-            } catch (Exception e) {
-                LOG.error("Reconnect failed", e);
-            }
-        }
-    };
+    private ReconnectionManager reconnectionManager;
 
     @PostConstruct
     private void init() throws Exception {
@@ -60,9 +50,14 @@ public class BotService {
 
     private void initConnection() throws Exception {
         this.connection = botLogin();
-        this.connection.addConnectionListener(this.connectionClosedListener);
+
         this.chatManager = ChatManager.getInstanceFor(this.connection);
         this.chatManager.addIncomingListener(this::onMessageReceived);
+
+        this.reconnectionManager = ReconnectionManager.getInstanceFor(this.connection);
+        this.reconnectionManager.setReconnectionPolicy(ReconnectionManager.ReconnectionPolicy.FIXED_DELAY);
+        this.reconnectionManager.setFixedDelay(5);
+        this.reconnectionManager.enableAutomaticReconnection();
     }
 
     private XMPPTCPConnection botLogin() throws Exception {
@@ -104,9 +99,7 @@ public class BotService {
 
     public void sendMessage(Map<String, Object> message, String group) {
 
-        String timestamp = FastDateFormat
-                .getDateTimeInstance(FastDateFormat.MEDIUM, FastDateFormat.MEDIUM)
-                .format(new Date());
+        String timestamp = DateFormatUtils.format(new Date(), "yyyy-MM-dd, HH:mm:ss");
 
         String strMessage = timestamp + "\n" +
                 message.entrySet().stream()
@@ -160,8 +153,7 @@ public class BotService {
 
     @PreDestroy
     private void fin() {
-        if (connection instanceof XMPPTCPConnection) {
-            ((XMPPTCPConnection) connection).disconnect();
-        }
+        this.reconnectionManager.disableAutomaticReconnection();
+        this.connection.disconnect();
     }
 }
