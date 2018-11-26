@@ -24,5 +24,7 @@ public class SobConfiguration {
 
     private String botResource = "sob-bot";
 
+    private int verifyCodeExpiryMin = 5;
+
     private Map<String, List<String>> users;
 }
