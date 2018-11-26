@@ -89,6 +89,9 @@ public class BotService {
     }
 
     private void onMessageReceived(EntityBareJid jid, Message message, Chat chat) {
+
+        LOG.info("Received message '" + message.getBody() + "' from " + jid.asUnescapedString());
+
         try {
             Bot bot = botFactory.getBot(message);
             if (bot != null) {

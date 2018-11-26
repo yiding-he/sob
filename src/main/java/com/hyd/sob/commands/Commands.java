@@ -3,6 +3,8 @@ package com.hyd.sob.commands;
 import com.hyd.sob.Role;
 import org.jivesoftware.smack.chat2.Chat;
 import org.jivesoftware.smack.packet.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -12,6 +14,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class Commands {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Commands.class);
 
     private Set<Command> commands = new HashSet<>();
 
@@ -47,6 +51,10 @@ public class Commands {
 
         if (command == null) {
             command = getCommand(role, "help");
+        } else {
+            LOG.info("Received command " +
+                    "'" + command.getClass().getSimpleName() + "' " +
+                    "from " + message.getFrom().asUnescapedString());
         }
 
         if (split.length == 1) {

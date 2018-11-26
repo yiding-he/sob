@@ -21,6 +21,6 @@ public class AdminHelpCommand extends AdminCommand {
                 .map(Command::getCommandName)
                 .collect(Collectors.joining("\n"));
 
-        return "可选命令：\n" + commandList;
+        return "Available commands:\n" + commandList;
     }
 }
