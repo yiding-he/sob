@@ -3,6 +3,7 @@ package com.hyd.sob;
 import com.hyd.sob.bots.Bot;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.jivesoftware.smack.AbstractConnectionClosedListener;
 import org.jivesoftware.smack.AbstractXMPPConnection;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ReconnectionManager;
@@ -42,22 +43,32 @@ public class BotService {
 
     private ReconnectionManager reconnectionManager;
 
+    private AbstractConnectionClosedListener connectionClosedListener = new AbstractConnectionClosedListener() {
+
+        @Override
+        public void connectionTerminated() {
+            try {
+                LOG.warn("Connection closed, reconnecting...");
+                initConnection();
+            } catch (Exception e) {
+                LOG.error("Reconnect failed", e);
+            }
+        }
+    };
+
     @PostConstruct
     private void init() throws Exception {
         initConnection();
-        LOG.info("SOB bot is ready.");
     }
 
     private void initConnection() throws Exception {
         this.connection = botLogin();
+        this.connection.addConnectionListener(connectionClosedListener);
 
         this.chatManager = ChatManager.getInstanceFor(this.connection);
         this.chatManager.addIncomingListener(this::onMessageReceived);
 
-        this.reconnectionManager = ReconnectionManager.getInstanceFor(this.connection);
-        this.reconnectionManager.setReconnectionPolicy(ReconnectionManager.ReconnectionPolicy.FIXED_DELAY);
-        this.reconnectionManager.setFixedDelay(5);
-        this.reconnectionManager.enableAutomaticReconnection();
+        LOG.info("SOB bot is ready.");
     }
 
     private XMPPTCPConnection botLogin() throws Exception {
